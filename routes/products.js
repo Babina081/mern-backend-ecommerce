@@ -3,6 +3,35 @@ const Product = require("../models/products");
 const { Category } = require("../models/category");
 const router = express.Router();
 const mongoose = require("mongoose");
+//for multiple images
+const multer = require("multer");
+
+const FILE_TYPE_MAP = {
+  // MIME TYPE
+  "image/png": "png",
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpg",
+};
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const isValid = FILE_TYPE_MAP[file.mimetype];
+    let uploadError = new Error("invalid image type");
+    if (isValid) {
+      uploadError = null;
+    }
+    cb(uploadError, "public/uploads");
+  },
+  filename: function (req, file, cb) {
+    // const fileName = file.originalname.replace(" ", "-");
+    const fileName = file.originalname.split(" ").join("-");
+    const extension = FILE_TYPE_MAP[file.mimetype];
+    cb(null, `${fileName}-${Date.now()}.${extension}`);
+  },
+});
+// console.log(Date.now());
+
+const uploadOptions = multer({ storage: storage });
 
 // http://localhost:3000/api/v1/products
 router.get(`/`, async (req, res) => {
@@ -40,7 +69,7 @@ router.get("/:id", async (req, res) => {
   res.send(product);
 });
 
-router.post(`/`, async (req, res) => {
+router.post(`/`, uploadOptions.single("image"), async (req, res) => {
   //   const newProduct = req.body;
   //   console.log(newProduct);
   //   res.send(newProduct);
@@ -52,12 +81,20 @@ router.post(`/`, async (req, res) => {
       .status(400)
       .send({ success: false, message: "the category cannot be found" });
   }
+  const file = req.file;
+  if (!category) {
+    return res
+      .status(400)
+      .send({ success: false, message: "the category cannot be found" });
+  }
+  const fileName = file.filename;
+  const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
 
   let product = new Product({
     name: req.body.name,
     description: req.body.description,
     richDescription: req.body.richDescription,
-    image: req.body.image,
+    image: `${basePath}${fileName}`,
     brand: req.body.brand,
     price: req.body.price,
     category: req.body.category,
@@ -164,6 +201,30 @@ router.get("/get/featured/:count", async (req, res) => {
     res.status(500).json({ success: false });
   }
   res.send(productFeatured);
+});
+
+//use .any() instead of .array('images',10) for multiple images
+router.put("/gallery-images/:id", uploadOptions.any(), async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(400).send("Invalid Product Id");
+  }
+  const files = req.files;
+  let imagesPaths = [];
+  const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+  if (files) {
+    files.forEach((file) => {
+      imagesPaths.push(`${basePath}${file.filename}`);
+    });
+  }
+  const product = await Product.findByIdAndUpdate(
+    req.params.id,
+    { images: imagesPaths },
+    { new: true }
+  );
+  if (!product) {
+    return res.status(500).send("the gallery cannot be updated");
+  }
+  res.status(200).send(product);
 });
 
 module.exports = router;
