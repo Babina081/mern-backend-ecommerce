@@ -36,7 +36,9 @@ It is a mini CRUD development project using javascript, nodejs and mongodb assoc
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.4.4",
     "morgan": "^1.10.0",
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.4",
+    "multer": "^1.4.5-lts.1"
+    
 ```
 
 ## Run Environment
@@ -56,7 +58,7 @@ http://localhost:3000/
 ```jsx
 const express = require("express");
 const app = express();
-app.get(`/`, ()=>{res.send('hello world'});
+app.get(`/`, ()=>{res.send('hello world')});
 app.listen(3000, () => {
   console.log(api);
   console.log("Listening on port http://localhost:3000");
