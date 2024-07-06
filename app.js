@@ -29,6 +29,8 @@ app.options("*", cors());
 //for authentication
 app.use(authJwt());
 
+app.use("/public/uploads", express.static(__dirname + "/public/uploads"));
+
 //handling error
 app.use(errorHandler);
 
