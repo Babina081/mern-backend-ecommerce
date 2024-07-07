@@ -4,6 +4,9 @@ const app = express();
 const bodyParser = require("body-parser");
 //log http request (get, post, delete,put,patch)
 const morgan = require("morgan");
+
+//mongoose help to talk with the mongodb database
+//it is wrapper of the mongodb
 const mongoose = require("mongoose");
 
 // for authentication of token and authorization created a separate file called helpers
