@@ -82,10 +82,10 @@ router.post(`/`, uploadOptions.single("image"), async (req, res) => {
       .send({ success: false, message: "the category cannot be found" });
   }
   const file = req.file;
-  if (!category) {
+  if (!file) {
     return res
       .status(400)
-      .send({ success: false, message: "the category cannot be found" });
+      .send({ success: false, message: "the image file cannot be found" });
   }
   const fileName = file.filename;
   const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
@@ -140,23 +140,19 @@ router.put("/:id", async (req, res) => {
       .send({ success: false, message: "the category cannot be found" });
   }
 
-  const product = await Product.findByIdAndUpdate(
-    id,
-    {
-      name: req.body.name,
-      description: req.body.description,
-      richDescription: req.body.richDescription,
-      image: req.body.image,
-      brand: req.body.brand,
-      price: req.body.price,
-      category: req.body.category,
-      countInStock: req.body.countInStock,
-      rating: req.body.rating,
-      numReviews: req.body.numReviews,
-      isFeatured: req.body.isFeatured,
-    },
-    { new: true }
-  );
+  const product = await Product.findByIdAndUpdate(id, {
+    name: req.body.name,
+    description: req.body.description,
+    richDescription: req.body.richDescription,
+    image: req.body.image,
+    brand: req.body.brand,
+    price: req.body.price,
+    category: req.body.category,
+    countInStock: req.body.countInStock,
+    rating: req.body.rating,
+    numReviews: req.body.numReviews,
+    isFeatured: req.body.isFeatured,
+  });
   if (!product) {
     return res.status(500).send("the product cannot be updated");
   }
