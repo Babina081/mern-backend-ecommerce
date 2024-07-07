@@ -9,22 +9,22 @@ const orderSchema = mongoose.Schema({
   ],
   shippingAddress1: {
     type: String,
-    default: true,
+    default: "",
   },
   shippingAddress2: {
     type: String,
   },
   city: {
     type: String,
-    default: true,
+    default: "",
   },
   zip: {
     type: String,
-    default: true,
+    default: "",
   },
   country: {
     type: String,
-    default: true,
+    default: "",
   },
   phone: {
     type: Number,
