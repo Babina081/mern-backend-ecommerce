@@ -48,6 +48,12 @@ const productSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isOnSale: {
+    type: Boolean,
+  },
+  saleAmount: {
+    type: String,
+  },
   dateCreated: {
     type: Date,
     default: Date.now,
