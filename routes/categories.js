@@ -1,6 +1,35 @@
 const express = require("express");
 const { Category } = require("../models/category");
 const router = express.Router();
+//for multiple images
+const multer = require("multer");
+const { default: mongoose } = require("mongoose");
+
+const FILE_TYPE_MAP = {
+  // MIME TYPE
+  "image/png": "png",
+  "image/jpeg": "jpeg",
+  "image/jpg": "jpg",
+};
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const isValid = FILE_TYPE_MAP[file.mimetype];
+    let uploadError = new Error("invalid image type");
+    if (isValid) {
+      uploadError = null;
+    }
+    cb(uploadError, "public/uploads");
+  },
+  filename: function (req, file, cb) {
+    // const fileName = file.originalname.replace(" ", "-");
+    const fileName = file.originalname.split(" ").join("-");
+    const extension = FILE_TYPE_MAP[file.mimetype];
+    cb(null, `${fileName}-${Date.now()}.${extension}`);
+  },
+});
+// console.log(Date.now());
+
+const uploadOptions = multer({ storage: storage });
 
 router.get("/", async (req, res) => {
   const categoryList = await Category.find();
@@ -22,11 +51,20 @@ router.get("/:id", async (req, res) => {
   res.status(200).send(category);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", uploadOptions.single("image"), async (req, res) => {
+  const file = req.file;
+  if (!file) {
+    return res
+      .status(400)
+      .send({ success: false, message: "the image file cannot be found" });
+  }
+  const fileName = file.filename;
+  const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
   let category = new Category({
     name: req.body.name,
     icon: req.body.icon,
     color: req.body.color,
+    image: `${basePath}${fileName}`,
   });
 
   category = await category.save();
@@ -57,21 +95,47 @@ router.delete("/:id", (req, res) => {
     });
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", uploadOptions.single("image"), async (req, res) => {
   const { id } = req.params;
-  const category = await Category.findByIdAndUpdate(
-    id,
+  // validating id
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).send("Invalid product id");
+  }
+  console.log("id is", id);
+  const file = req.file;
+  console.log(file);
+  if (!file) {
+    return res
+      .status(400)
+      .send({ success: false, message: "the image file cannot be found" });
+  }
+  const fileName = file.filename;
+  const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+
+  console.log("Updating category with ID:", id);
+  console.log("Update data:", {
+    name: req.body.name,
+    icon: req.body.icon,
+    color: req.body.color,
+    image: `${basePath}${fileName}`,
+  });
+
+  let category = await Category.findByIdAndUpdate(
+    req.params.id,
     {
       name: req.body.name,
       icon: req.body.icon,
       color: req.body.color,
+      image: `${basePath}${fileName}`,
     },
     { new: true }
   );
+
+  console.log("category is", category);
   if (!category) {
     return res.status(400).send("the category cannot be updated");
   }
-  res.send(category);
+  res.status(200).send({ category });
 });
 
 module.exports = router;
