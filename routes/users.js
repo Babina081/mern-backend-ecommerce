@@ -55,7 +55,7 @@ router.post("/login", async (req, res) => {
   }
 
   //checking whether the password of the user entered and the password in the server matches or not
-  if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
+  if (user && bcrypt.compare(req.body.password, user.passwordHash)) {
     //creating token
     const token = jwt.sign(
       {
