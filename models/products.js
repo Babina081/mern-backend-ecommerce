@@ -24,6 +24,10 @@ const productSchema = mongoose.Schema({
     type: Number,
     default: 0,
   },
+  inStock: {
+    type: Number,
+    default: 0,
+  },
   //connecting to other database
   category: {
     type: mongoose.Schema.Types.ObjectId,
