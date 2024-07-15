@@ -52,32 +52,35 @@ router.post("/login", async (req, res) => {
 
   if (!user) {
     res.status(500).json({ success: false });
+  } else if (!req.body.password || !user.passwordHash) {
+    res.status(400).json({ message: "Missing password or password hash" });
+  } else {
+    //checking whether the password of the user entered and the password in the server matches or not
+    if (user && bcrypt.compare(req.body.password, user.passwordHash)) {
+      //creating token
+      const token = jwt.sign(
+        {
+          userId: user.id,
+          isAdmin: user.isAdmin,
+        },
+        //   can put any secret key value
+        process.env.SECRET,
+        //expiration of token
+        {
+          expiresIn: "1d",
+        }
+      );
+      res.status(200).send({
+        user: user.email,
+        token: token,
+        success: true,
+        message: "user is authenticated",
+      });
+    } else {
+      res.status(400).send("password is wrong!");
+    }
   }
 
-  //checking whether the password of the user entered and the password in the server matches or not
-  if (user && bcrypt.compare(req.body.password, user.passwordHash)) {
-    //creating token
-    const token = jwt.sign(
-      {
-        userId: user.id,
-        isAdmin: user.isAdmin,
-      },
-      //   can put any secret key value
-      process.env.SECRET,
-      //expiration of token
-      {
-        expiresIn: "1d",
-      }
-    );
-    res.status(200).send({
-      user: user.email,
-      token: token,
-      success: true,
-      message: "user is authenticated",
-    });
-  } else {
-    res.status(400).send("password is wrong!");
-  }
   //   return res.status(200).send(user);
 });
 
