@@ -9,11 +9,22 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  image: {
+    type: String,
+  },
   phone: {
     type: String,
     required: true,
   },
   street: {
+    type: String,
+    default: "",
+  },
+  gender: {
+    type: String,
+    default: "",
+  },
+  address: {
     type: String,
     default: "",
   },
