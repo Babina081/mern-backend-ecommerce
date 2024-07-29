@@ -89,7 +89,7 @@ router.get("/get/count", async (req, res) => {
   if (!userCount) {
     return res.status(500).json({ success: false });
   }
-  res.status(200).send({ count: userCount });
+  return res.status(200).send({ count: userCount });
 });
 
 router.delete("/:id", async (req, res) => {
